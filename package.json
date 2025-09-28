@@ -2,7 +2,12 @@
   "name": "eclipse",
   "version": "1.0.0",
   "description": "Eclipse Key Generator",
+  "main": "index.html",
   "scripts": {
-    "start": "echo 'Static site'"
+    "build": "echo 'No build needed'",
+    "start": "npx serve -s ."
+  },
+  "dependencies": {
+    "serve": "^14.2.0"
   }
 }
