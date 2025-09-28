@@ -10,6 +10,7 @@
         .generate-btn { background: #4CAF50; color: white; }
         .ban-btn { background: #ff4444; color: white; }
         .clear-btn { background: #ff8800; color: white; }
+        .export-btn { background: #2196F3; color: white; }
     </style>
 </head>
 <body>
@@ -27,14 +28,17 @@
         <h3>Manage Keys</h3>
         <input type="text" id="banKey" placeholder="Enter key to ban">
         <button class="ban-btn" onclick="banKey()">Ban Key</button>
-        
         <button class="clear-btn" onclick="clearAllKeys()">Clear All Keys</button>
+        <button class="export-btn" onclick="exportKeys()">Export Keys</button>
     </div>
 
     <div style="margin-top: 30px;">
         <h3>Current Keys</h3>
         <div id="keysList"></div>
     </div>
+
+    <!-- Скрытый div для лоадера -->
+    <div id="keysData" style="display: none;"></div>
 
     <script>
         function getKeys() {
@@ -43,6 +47,7 @@
 
         function saveKeys(keys) {
             localStorage.setItem('eclipseKeys', JSON.stringify(keys));
+            updateKeysData();
         }
 
         function generateKey(type) {
@@ -89,7 +94,24 @@
                 localStorage.removeItem('eclipseKeys');
                 showKeys();
                 document.getElementById('result').innerHTML = '';
+                updateKeysData();
             }
+        }
+
+        function exportKeys() {
+            const keys = getKeys();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(keys, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "eclipse_keys_backup.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function updateKeysData() {
+            const keys = getKeys();
+            document.getElementById('keysData').innerHTML = JSON.stringify(keys);
         }
 
         function showKeys() {
@@ -113,7 +135,9 @@
             keysList.innerHTML = html || '<p>No keys generated yet</p>';
         }
 
+        // Инициализация
         showKeys();
+        updateKeysData();
     </script>
 </body>
 </html>
