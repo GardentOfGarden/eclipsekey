@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Eclipse Key Generator</title>
+    <style>
+        body { font-family: Arial; max-width: 600px; margin: 50px auto; padding: 20px; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        .key { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Eclipse Key Generator</h1>
+    
+    <div>
+        <button onclick="generateKey('day')">Generate 1 Day Key</button>
+        <button onclick="generateKey('week')">Generate 7 Days Key</button>
+        <button onclick="generateKey('month')">Generate 30 Days Key</button>
+    </div>
+    
+    <div id="result"></div>
+    
+    <div style="margin-top: 30px;">
+        <h3>Manage Keys</h3>
+        <input type="text" id="banKey" placeholder="Enter key to ban">
+        <button onclick="banKey()">Ban Key</button>
+        
+        <button onclick="clearAllKeys()" style="background: #ff4444; color: white;">Clear All Keys</button>
+    </div>
+
+    <div style="margin-top: 30px;">
+        <h3>Current Keys</h3>
+        <div id="keysList"></div>
+    </div>
+
+    <script>
+        function getKeys() {
+            return JSON.parse(localStorage.getItem('eclipseKeys')) || {};
+        }
+
+        function saveKeys(keys) {
+            localStorage.setItem('eclipseKeys', JSON.stringify(keys));
+        }
+
+        function generateKey(type) {
+            const days = type === 'day' ? 1 : type === 'week' ? 7 : 30;
+            const key = 'ECLIPSE-' + Math.random().toString(36).substr(2, 12).toUpperCase();
+            const expires = Date.now() + (days * 24 * 60 * 60 * 1000);
+            
+            const keys = getKeys();
+            keys[key] = {
+                expires: expires,
+                banned: false,
+                type: type
+            };
+            
+            saveKeys(keys);
+            showKeys();
+            
+            document.getElementById('result').innerHTML = 
+                `<div class="key"><strong>Generated Key:</strong> ${key}<br>
+                 <strong>Type:</strong> ${days} day(s)<br>
+                 <strong>Expires:</strong> ${new Date(expires).toLocaleString()}</div>`;
+        }
+
+        function banKey() {
+            const key = document.getElementById('banKey').value.trim();
+            const keys = getKeys();
+            
+            if (keys[key]) {
+                keys[key].banned = true;
+                saveKeys(keys);
+                showKeys();
+                alert('Key banned successfully');
+                document.getElementById('banKey').value = '';
+            } else {
+                alert('Key not found');
+            }
+        }
+
+        function clearAllKeys() {
+            if (confirm('Are you sure you want to delete ALL keys?')) {
+                localStorage.removeItem('eclipseKeys');
+                showKeys();
+                document.getElementById('result').innerHTML = '';
+            }
+        }
+
+        function showKeys() {
+            const keys = getKeys();
+            const keysList = document.getElementById('keysList');
+            let html = '';
+            
+            for (const [key, data] of Object.entries(keys)) {
+                const expired = Date.now() > data.expires;
+                const status = data.banned ? 'BANNED' : expired ? 'EXPIRED' : 'ACTIVE';
+                const statusColor = data.banned ? 'red' : expired ? 'orange' : 'green';
+                
+                html += `<div class="key">
+                    <strong>${key}</strong><br>
+                    Type: ${data.type} | Status: <span style="color: ${statusColor}">${status}</span><br>
+                    Expires: ${new Date(data.expires).toLocaleString()}
+                </div>`;
+            }
+            
+            keysList.innerHTML = html || '<p>No keys generated yet</p>';
+        }
+
+        showKeys();
+    </script>
+</body>
+</html>
